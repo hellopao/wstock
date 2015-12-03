@@ -1,0 +1,36 @@
+{
+  "name": "wstock",
+  "version": "0.0.1",
+  "description": "a cmd tool for watching stock info",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "wstock" : "bin/stock.js"
+  },
+  "author": {
+    "name": "qinjia",
+    "email": "qinjia@outlook.com"
+  },
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hellopao/wstock"
+  },
+  "dependencies": {
+    "colors": "^1.1.2",
+    "commander": "^2.9.0",
+    "iconv": "^2.1.11",
+    "iconv-lite": "^0.4.13"
+  },
+  "keywords": [
+    "stock",
+    "cmd tool"
+  ],
+  "homepage": "https://github.com/hellopao/wstock",
+  "_id": "wstock@0.0.1",
+  "_from": "wstock@"
+}
