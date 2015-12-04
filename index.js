@@ -109,7 +109,11 @@ exports.queryStockInfo = key => {
 	return fetchStockInfo(key)
 		.then(data => {
 			data = JSON.parse(data);
-				
+			
+			if (!data.length) {
+				return `无相关股票记录: ${key}`;
+			}
+			
 			return data.stocks;
 		})
 };
@@ -120,6 +124,9 @@ exports.queryStockStatus = code => {
 		.then(data => {
 			data = JSON.parse(data);
 			
+			if (data.error_code) {
+				return `无此股票代码: ${code}`
+			}
 			return data[code];
 		})
 };
@@ -146,11 +153,11 @@ exports.addStock = code => {
 		.then(results => {
 			let stockData = JSON.parse(results[0]);
 			
-			let stock = results[1].find(item => item.code.toLowerCase() === code.toLowerCase());
-			
-			if (!stock) {
+			if (typeof results[1] === "string") {
 				return `无此股票代码: ${code}`
 			}
+			
+			let stock = results[1].find(item => item.code.toLowerCase() === code.toLowerCase());
 			
 			stockData = stockData.filter(item => item.code.toLowerCase() !== code.toLowerCase()).concat({
 				code: stock.code,

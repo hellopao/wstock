@@ -8,14 +8,14 @@ const path = require('path');
 const program = require('commander');
 
 const stock = require('../index');
-const teminate = require('../lib/terminate');
+const terminate = require('../lib/terminate');
 const config = require('../config/config');
 const pkg = require('../package');
 
 function comet (promise,interval) {
 	promise()
-		.then(()=>{
-			setInterval(promise,interval);
+		.then((success)=>{
+			success && setInterval(promise,interval);
 		})
 }
 
@@ -32,7 +32,11 @@ program
 	.action(name => {
 		stock.queryStockInfo(name)
 			.then(stocks => {
-				teminate.showStockInfo(stocks);
+				if (typeof stocks !== "string") {
+					terminate.showStockInfo(stocks);
+				} else {
+					terminate.showMsg(stocks);
+				}		
 			})
 	})	
 	
@@ -46,7 +50,15 @@ program
 		comet(()=>{
 			return stock.queryStockStatus(code)
 				.then(stockStatus => {
-					teminate.showStockStatus(stockStatus);
+					let stockExist = true;
+					if (typeof stockStatus === "string") {
+						terminate.showMsg(stockStatus);
+						stockExist = false;
+					} else {
+						terminate.showStockStatus(stockStatus);						
+					}
+					
+					return stockExist;
 				})
 		},config.stockCheckInterval)
 	})	
@@ -61,7 +73,8 @@ program
 		comet(()=> {
 			return stock.queryStockListStatus()
 				.then(listStatus => {
-					teminate.showStockListStatus(listStatus);
+					terminate.showStockListStatus(listStatus);
+					return true;
 				})
 		},config.stockCheckInterval);
 	})	
@@ -75,7 +88,7 @@ program
 	.action(code => {
 		stock.addStock(code)
 			.then(msg => {
-				teminate.showMsg(msg);
+				terminate.showMsg(msg);
 			})
 	})	
 	
@@ -88,7 +101,7 @@ program
 	.action(code => {
 		stock.removeStock(code)
 			.then(msg=>{
-				teminate.showMsg(msg);
+				terminate.showMsg(msg);
 			})
 	})	
 	
