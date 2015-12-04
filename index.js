@@ -110,7 +110,7 @@ exports.queryStockInfo = key => {
 		.then(data => {
 			data = JSON.parse(data);
 			
-			if (!data.length) {
+			if (!data.stocks.length) {
 				return `无相关股票记录: ${key}`;
 			}
 			
