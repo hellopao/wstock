@@ -8,7 +8,7 @@ const request = require('request');
 const config = require('./config/config');
 
 const http = request.defaults({
-	proxy: "http://127.0.0.1:8888",	//for fiddler
+	//proxy: "http://127.0.0.1:8888",	//for fiddler
 	jar: true,
 	headers: {
 		Accept: '*/*',
