@@ -1,12 +1,12 @@
 {
   "name": "wstock",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "a cmd tool for watching stock info",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "wstock" : "bin/stock.js"
+    "wstock" : "bin/wstock.js"
   },
   "author": {
     "name": "qinjia",
@@ -22,15 +22,13 @@
   },
   "dependencies": {
     "colors": "^1.1.2",
-    "commander": "^2.9.0",
-    "iconv": "^2.1.11",
-    "iconv-lite": "^0.4.13"
+    "commander": "^2.9.0"
   },
   "keywords": [
     "stock",
     "cmd tool"
   ],
   "homepage": "https://github.com/hellopao/wstock",
-  "_id": "wstock@0.0.2",
+  "_id": "wstock@0.0.3",
   "_from": "wstock@"
 }

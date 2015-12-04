@@ -1,14 +1,20 @@
 "use strict";
 
 const fs = require('fs');
-const qs = require('querystring');
 const url = require('url');
-const vm = require('vm');
 
-const iconv = require('iconv-lite'); 
-const request = require('./lib/request');
+const request = require('request');
 
 const config = require('./config/config');
+
+const http = request.defaults({
+	proxy: "http://127.0.0.1:8888",	//for fiddler
+	jar: true,
+	headers: {
+		Accept: '*/*',
+		"User-Agent": 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'
+	}
+});
 
 /**
  * 读取股票代码配置
@@ -41,17 +47,40 @@ function writeStockCodeFile (data) {
 }
 
 /**
- * 根据股票名称获取股票详情
+ * 访问雪球财经站点
  */
-function fetchStockInfoByName (name) {
-	return request.get(config.stockAPI.query.replace(/\{stockName\}/,name))
+function visitStockSite () {
+	return new Promise((resolve,reject) => {
+		if (http.authed) {
+			return resolve();
+		}
+		http.get(config.stockAPI.site, (err,res,body) => {
+			if (err) {
+				reject(err);
+			} else {
+				http.authed = true;
+				resolve();
+			}
+		})
+	})
 }
 
 /**
- * 根据股票代码获取股票详情
+ * 根据股票名称/代码获取股票详情
  */
-function fetchStockInfoByCode (code) {
-	return request.get(config.stockAPI.query.replace(/\{stockName\}/,code))
+function fetchStockInfo (key) {
+	return visitStockSite()
+		.then(()=> {
+			return new Promise((resolve,reject) => {
+				http.get(config.stockAPI.query.replace(/\{key\}/,key), (err,res,body) => {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(body);
+					}
+				})
+			})
+		})
 }
 
 /**
@@ -62,50 +91,36 @@ function fetchStockStatus (code) {
 	if (isMulti) {
 		code = code.join(',');
 	}
-	return request.get(config.stockAPI.info.replace(/\{code\}/,code))
+	return visitStockSite()
+		.then(()=> {
+			return new Promise((resolve,reject) => {
+				http.get(config.stockAPI.info.replace(/\{code\}/,code), (err,res,body) => {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(body);
+					}
+				})
+			})
+		})
 }
 
-exports.queryStockInfoByName = name => {
-	return fetchStockInfoByName(name)
-		.then(stockStr => {
-			stockStr = vm.runInNewContext(stockStr); //index~code~name~shortname
-			let stockInfo = stockStr.split('~');
-			return {
-				code: `${stockInfo[0]}${stockInfo[1]}`,
-				name: stockInfo[2]
-			};
-		})
-	
-};
-
-exports.queryStockInfoByCode = code => {
-	code = code.replace(/^[^\d]+/,'');
-	
-	return fetchStockInfoByCode(code)
-		.then(stockStr => {
-			stockStr = vm.runInNewContext(stockStr); //index~code~indexname~...~name~shortname
-			let stockInfo = stockStr.split('~');
-			return {
-				code: `${stockInfo[0]}${stockInfo[1]}`,
-				name: stockInfo[6]
-			};
+exports.queryStockInfo = key => {
+	return fetchStockInfo(key)
+		.then(data => {
+			data = JSON.parse(data);
+				
+			return data.stocks;
 		})
 };
 
 exports.queryStockStatus = code => {
+	code = code.toUpperCase();
 	return fetchStockStatus(code)
-		.then(stockStr => {
-			stockStr = vm.runInNewContext(stockStr.replace(/^var/,''));
-			let status = stockStr.split(',');
-			return {
-				code: code,
-				name: status[0],
-				opening: status[1],
-				closing: status[2],
-				current: status[3],
-				max: status[4],
-				min: status[5]
-			}
+		.then(data => {
+			data = JSON.parse(data);
+			
+			return data[code];
 		})
 };
 
@@ -117,44 +132,33 @@ exports.queryStockListStatus = () => {
 			let codes = stockData.map(stock => stock.code);
 			
 			return fetchStockStatus(codes)
-				.then(stockStr => {
-					let stocks = stockStr
-						.split(/\n/)
-						.filter(str => str)
-						.map(str => vm.runInNewContext(str.replace(/^var/,'')));
+				.then(data => {
+					data = JSON.parse(data);
 					
-					let stockStatus = stocks.map((statusStr,index) => {
-						let status = statusStr.split(',');
-						return {
-							code: codes[index],
-							name: status[0],
-							opening: status[1],
-							closing: status[2],
-							current: status[3],
-							max: status[4],
-							min: status[5]
-						}
-					});
-					
-					return stockStatus;
+					return Object.keys(data).map(code => data[code]);
 				})
 		})
 };
 
 exports.addStock = code => {
 	
-	return Promise.all([readStockCodeFile(),exports.queryStockInfoByCode(code)])
+	return Promise.all([readStockCodeFile(),exports.queryStockInfo(code)])
 		.then(results => {
 			let stockData = JSON.parse(results[0]);
-			let stockInfo = results[1];
 			
-			stockData = stockData.filter(item => item.code !== stockInfo.code).concat({
-				name: stockInfo.name,
-				code: code
+			let stock = results[1].find(item => item.code.toLowerCase() === code.toLowerCase());
+			
+			if (!stock) {
+				return `无此股票代码: ${code}`
+			}
+			
+			stockData = stockData.filter(item => item.code.toLowerCase() !== code.toLowerCase()).concat({
+				code: stock.code,
+				name: stock.name
 			});
 			
 			return writeStockCodeFile(JSON.stringify(stockData))	
-				.then(()=>"添加股票代码成功")
+				.then(()=>`添加股票代码 ${code} 成功`)
 		})
 };
 
@@ -163,14 +167,15 @@ exports.removeStock = code => {
 		.then(data => {
 			let stockData = JSON.parse(data);
 			
-			var index = stockData.findIndex(item => code === item.code);
+			var index = stockData.findIndex(item => code.toLowerCase() === item.code.toLowerCase());
 			
 			if (index !== -1) {
 				stockData.splice(index,1);
 				return writeStockCodeFile(JSON.stringify(stockData))	
-					.then(()=>"删除股票代码成功")
+					.then(()=>`删除股票代码 ${code} 成功`)
 			} else {
-				return "列表中无此股票代码";
+				return `列表中无此股票代码: ${code}`;
 			}
 		})
 }
+
