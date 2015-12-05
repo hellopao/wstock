@@ -12,14 +12,14 @@ const terminate = require('../lib/terminate');
 const config = require('../config/config');
 const pkg = require('../package');
 
-function comet (promise,interval) {
+function comet(promise, interval) {
 	promise()
-		.then((success)=>{
-			success && setInterval(promise,interval);
+		.then((success) => {
+			success && setInterval(promise, interval);
 		})
 }
 
-program	
+program
 	.version(pkg.version)
 	.usage('[command]')
 
@@ -28,7 +28,7 @@ program
  */
 program
 	.command('query <name|code>')
-	.description('search stock code by name or code')
+	.description('search stock info by name or code')
 	.action(name => {
 		stock.queryStockInfo(name)
 			.then(stocks => {
@@ -36,7 +36,7 @@ program
 					terminate.showStockInfo(stocks);
 				} else {
 					terminate.showMsg(stocks);
-				}		
+				}
 			})
 	})	
 	
@@ -44,10 +44,11 @@ program
  * 查询股票状态
  */
 program
-	.command('show <code>')	
-	.description('show stock status by code')	
-	.action(code => {
-		comet(()=>{
+	.command('show <code>')
+	.description('show stock status by code')
+	.option('-n, --nocolor', 'do not mark the stock status red or green')
+	.action((code, options) => {
+		comet(() => {
 			return stock.queryStockStatus(code)
 				.then(stockStatus => {
 					let stockExist = true;
@@ -55,36 +56,37 @@ program
 						terminate.showMsg(stockStatus);
 						stockExist = false;
 					} else {
-						terminate.showStockStatus(stockStatus);						
+						terminate.showStockStatus(stockStatus,options.nocolor);
 					}
-					
+
 					return stockExist;
 				})
-		},config.stockCheckInterval)
+		}, config.stockCheckInterval)
 	})	
 	
 /**
  * 查询配置表中所有股票状态
  */
-program	
+program
 	.command('list')
-	.description('show the stock status list')	
-	.action(()=>{
-		comet(()=> {
+	.description('show the stock status list')
+	.option('-n, --nocolor', 'do not mark the stock status red or green')
+	.action((options) => {
+		comet(() => {
 			return stock.queryStockListStatus()
 				.then(listStatus => {
-					terminate.showStockListStatus(listStatus);
+					terminate.showStockListStatus(listStatus,options.nocolor);
 					return true;
 				})
-		},config.stockCheckInterval);
+		}, config.stockCheckInterval);
 	})	
 
 /**
  * 添加股票到配置表
- */	
+ */
 program
 	.command('add <code>')
-	.description('add stock to stock list')	
+	.description('add stock to stock list')
 	.action(code => {
 		stock.addStock(code)
 			.then(msg => {
@@ -94,17 +96,17 @@ program
 	
 /**
  * 从配置表中移除股票
- */		
+ */
 program
 	.command('remove <code>')
-	.description('remove stock from stock list')	
+	.description('remove stock from stock list')
 	.action(code => {
 		stock.removeStock(code)
-			.then(msg=>{
+			.then(msg=> {
 				terminate.showMsg(msg);
 			})
-	})	
-	
+	})
+
 program.parse(process.argv);
 
 // display help by default

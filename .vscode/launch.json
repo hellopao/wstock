@@ -7,7 +7,7 @@
 			"request": "launch",
 			"program": "bin/wstock.js",
 			"stopOnEntry": false,
-			"args": ["list"],			
+			"args": ["show","sz000801", "-n"],			
 			"cwd": ".",
 			"runtimeExecutable": null,
 			"runtimeArgs": [
