@@ -71,6 +71,7 @@ function visitStockSite () {
 function fetchStockInfo (key) {
 	return visitStockSite()
 		.then(()=> {
+			key = encodeURIComponent(key);
 			return new Promise((resolve,reject) => {
 				http.get(config.stockAPI.query.replace(/\{key\}/,key), (err,res,body) => {
 					if (err) {
@@ -93,6 +94,7 @@ function fetchStockStatus (code) {
 	}
 	return visitStockSite()
 		.then(()=> {
+			code = encodeURIComponent(code);
 			return new Promise((resolve,reject) => {
 				http.get(config.stockAPI.info.replace(/\{code\}/,code), (err,res,body) => {
 					if (err) {
