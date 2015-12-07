@@ -1,6 +1,6 @@
 {
   "name": "wstock",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "a cmd tool for watching stock info",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -30,6 +30,6 @@
     "cmd tool"
   ],
   "homepage": "https://github.com/hellopao/wstock",
-  "_id": "wstock@0.0.9",
+  "_id": "wstock@0.0.10",
   "_from": "wstock@"
 }

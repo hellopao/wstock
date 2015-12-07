@@ -47,6 +47,7 @@ program
 	.command('show <code>')
 	.description('show stock status by code')
 	.option('-n, --nocolor', 'do not mark the stock status red or green')
+	.option('-i, --interval <interval>', 'set the stock check interl')
 	.action((code, options) => {
 		comet(() => {
 			return stock.queryStockStatus(code)
@@ -61,7 +62,7 @@ program
 
 					return stockExist;
 				})
-		}, config.stockCheckInterval)
+		}, +options.interval || config.stockCheckInterval)
 	})	
 	
 /**
@@ -71,6 +72,7 @@ program
 	.command('list')
 	.description('show the stock status list')
 	.option('-n, --nocolor', 'do not mark the stock status red or green')
+	.option('-i, --interval <interval>', 'set the stock check interl')
 	.action((options) => {
 		comet(() => {
 			return stock.queryStockListStatus()
@@ -78,7 +80,7 @@ program
 					terminate.showStockListStatus(listStatus,options.nocolor);
 					return true;
 				})
-		}, config.stockCheckInterval);
+		}, +options.interval || config.stockCheckInterval);
 	})	
 
 /**
