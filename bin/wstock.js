@@ -47,7 +47,7 @@ program
 	.command('show <code>')
 	.description('show stock status by code')
 	.option('-n, --nocolor', 'do not mark the stock status red or green')
-	.option('-i, --interval <interval>', 'set the stock check interl')
+	.option('-i, --interval <interval>', 'set the stock check interval')
 	.action((code, options) => {
 		comet(() => {
 			return stock.queryStockStatus(code)
@@ -72,7 +72,7 @@ program
 	.command('list')
 	.description('show the stock status list')
 	.option('-n, --nocolor', 'do not mark the stock status red or green')
-	.option('-i, --interval <interval>', 'set the stock check interl')
+	.option('-i, --interval <interval>', 'set the stock check interval')
 	.action((options) => {
 		comet(() => {
 			return stock.queryStockListStatus()
