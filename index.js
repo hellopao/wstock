@@ -129,7 +129,7 @@ exports.queryStockStatus = code => {
 			if (data.error_code) {
 				return `无此股票代码: ${code}`
 			}
-			return data[code];
+			return Object.assign(data[code],{code:code});
 		})
 };
 
@@ -144,7 +144,7 @@ exports.queryStockListStatus = () => {
 				.then(data => {
 					data = JSON.parse(data);
 					
-					return Object.keys(data).map(code => data[code]);
+					return Object.keys(data).map(code => Object.assign(data[code],{code:code}));
 				})
 		})
 };
