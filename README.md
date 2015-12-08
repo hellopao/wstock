@@ -21,6 +21,8 @@ npm install wstock -g
 
 - `wstock show <code>`
 
+ show stock status and and check it at intervals
+
  	- `wstock show <code> -n`
 	 
 	 	do not mark the stock status red or green by its increase
@@ -29,7 +31,6 @@ npm install wstock -g
 	 
 	 	set the stock code check interval
 		 
- show stock status and and check it at intervals
  
 - `wstock query <code|name>`
 
