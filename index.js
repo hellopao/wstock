@@ -97,6 +97,9 @@ function fetchStockStatus (code) {
 			code = encodeURIComponent(code);
 			return new Promise((resolve,reject) => {
 				http.get(config.stockAPI.info.replace(/\{code\}/,code), (err,res,body) => {
+					if (res.statusCode == 400) {
+						http.authed = false;
+					}
 					if (err) {
 						reject(err);
 					} else {
@@ -129,7 +132,7 @@ exports.queryStockStatus = code => {
 			if (data.error_code) {
 				return `无此股票代码: ${code}`
 			}
-			return Object.assign(data[code],{code:code});
+			return Object.assign({},data[code],{code:code});
 		})
 };
 
@@ -144,7 +147,11 @@ exports.queryStockListStatus = () => {
 				.then(data => {
 					data = JSON.parse(data);
 					
-					return Object.keys(data).map(code => Object.assign(data[code],{code:code}));
+					if (data.error_code) {
+						return [];
+					}
+					
+					return Object.keys(data).map(code => Object.assign({},data[code],{code:code}));
 				})
 		})
 };
