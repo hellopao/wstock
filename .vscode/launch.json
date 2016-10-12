@@ -5,10 +5,10 @@
 			"name": "Launch",
 			"type": "node",
 			"request": "launch",
-			"program": "bin/wstock.js",
+			"program": "${workspaceRoot}/bin/wstock.js",
 			"stopOnEntry": false,
-			"args": ["list"],						
-			"cwd": ".",
+			"args": ["show","sz000801"],						
+			"cwd": "${workspaceRoot}",
 			"runtimeExecutable": null,
 			"runtimeArgs": [
 				"--nolazy"
